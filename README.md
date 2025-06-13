@@ -61,6 +61,3 @@ terraform apply
 - Proper resource dependencies
 - Secure authentication methods
 
-## License
-
-MIT
