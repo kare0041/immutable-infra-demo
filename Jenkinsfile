@@ -18,12 +18,29 @@ pipeline {
     stage('Install Terraform') {
       steps {
         sh '''
+          # Create directory if it doesn't exist
           mkdir -p ~/.local/bin
+          
+          # Download Terraform
           curl -LO https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip
-          unzip terraform_${TERRAFORM_VERSION}_linux_amd64.zip
+          
+          # Remove existing terraform binary if it exists
+          rm -f ~/.local/bin/terraform
+          
+          # Unzip with force flag
+          unzip -o terraform_${TERRAFORM_VERSION}_linux_amd64.zip
+          
+          # Move to bin directory
           mv terraform ~/.local/bin/
+          
+          # Clean up
           rm terraform_${TERRAFORM_VERSION}_linux_amd64.zip
+          
+          # Add to PATH
           export PATH="$HOME/.local/bin:$PATH"
+          
+          # Verify installation
+          terraform version
         '''
       }
     }
