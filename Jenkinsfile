@@ -2,7 +2,7 @@ pipeline {
   agent any
 
   environment {
-    PATH = "/opt/homebrew/bin:$PATH"  //
+    PATH = "/usr/local/bin:/usr/bin:/bin:$PATH"
     TF_VAR_subscription_id = credentials('AZURE_SUBSCRIPTION_ID')
     TF_VAR_admin_password  = credentials('VM_PASSWORD')
   }
@@ -14,10 +14,19 @@ pipeline {
       }
     }
 
+    stage('Install Dependencies') {
+      steps {
+        sh '''
+          apt-get update
+          apt-get install -y curl unzip sudo
+        '''
+      }
+    }
+
     stage('Install Terraform') {
       steps {
         sh '''
-          wget https://releases.hashicorp.com/terraform/1.5.7/terraform_1.5.7_linux_amd64.zip
+          curl -LO https://releases.hashicorp.com/terraform/1.5.7/terraform_1.5.7_linux_amd64.zip
           unzip terraform_1.5.7_linux_amd64.zip
           sudo mv terraform /usr/local/bin/
           rm terraform_1.5.7_linux_amd64.zip
