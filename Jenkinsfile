@@ -2,7 +2,7 @@ pipeline {
   agent any
 
   environment {
-    PATH = "/usr/local/bin:/usr/bin:/bin:$PATH"
+    PATH = "/opt/homebrew/bin:$PATH"  //
     TF_VAR_subscription_id = credentials('AZURE_SUBSCRIPTION_ID')
     TF_VAR_admin_password  = credentials('VM_PASSWORD')
   }
