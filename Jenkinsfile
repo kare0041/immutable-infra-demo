@@ -17,17 +17,26 @@ pipeline {
     stage('Install Terraform') {
       steps {
         sh '''
-          # Install required packages
-          apt-get update && apt-get install -y wget unzip
-
-          # Download and install Terraform
-          wget https://releases.hashicorp.com/terraform/1.5.7/terraform_1.5.7_linux_amd64.zip
-          unzip terraform_1.5.7_linux_amd64.zip
-          mv terraform /usr/local/bin/
+          # Create bin directory in user's home
+          mkdir -p $HOME/bin
+          
+          # Download Terraform using curl
+          curl -LO https://releases.hashicorp.com/terraform/1.5.7/terraform_1.5.7_linux_amd64.zip
+          
+          # Extract Terraform
+          unzip -o terraform_1.5.7_linux_amd64.zip
+          
+          # Move to user's bin directory
+          mv terraform $HOME/bin/
+          
+          # Clean up
           rm terraform_1.5.7_linux_amd64.zip
-
+          
+          # Add to PATH
+          export PATH="$HOME/bin:$PATH"
+          
           # Verify installation
-          terraform --version
+          $HOME/bin/terraform --version
         '''
       }
     }
@@ -35,7 +44,10 @@ pipeline {
     stage('Terraform Init') {
       steps {
         dir('terraform') {
-          sh 'terraform init'
+          sh '''
+            export PATH="$HOME/bin:$PATH"
+            terraform init
+          '''
         }
       }
     }
@@ -43,7 +55,10 @@ pipeline {
     stage('Terraform Validate') {
       steps {
         dir('terraform') {
-          sh 'terraform validate'
+          sh '''
+            export PATH="$HOME/bin:$PATH"
+            terraform validate
+          '''
         }
       }
     }
@@ -51,7 +66,10 @@ pipeline {
     stage('Terraform Plan') {
       steps {
         dir('terraform') {
-          sh 'terraform plan -out=tfplan'
+          sh '''
+            export PATH="$HOME/bin:$PATH"
+            terraform plan -out=tfplan
+          '''
         }
       }
     }
@@ -60,7 +78,10 @@ pipeline {
       steps {
         dir('terraform') {
           input message: 'Approve Terraform Apply?'
-          sh 'terraform apply -auto-approve tfplan'
+          sh '''
+            export PATH="$HOME/bin:$PATH"
+            terraform apply -auto-approve tfplan
+          '''
         }
       }
     }
