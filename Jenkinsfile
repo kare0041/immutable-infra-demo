@@ -5,6 +5,7 @@ pipeline {
     PATH = "/usr/local/bin:/usr/bin:/bin:$PATH"
     TF_VAR_subscription_id = credentials('AZURE_SUBSCRIPTION_ID')
     TF_VAR_admin_password  = credentials('VM_PASSWORD')
+    TERRAFORM_VERSION = "1.5.7"
   }
 
   stages {
@@ -14,22 +15,15 @@ pipeline {
       }
     }
 
-    stage('Install Dependencies') {
-      steps {
-        sh '''
-          apt-get update
-          apt-get install -y curl unzip sudo
-        '''
-      }
-    }
-
     stage('Install Terraform') {
       steps {
         sh '''
-          curl -LO https://releases.hashicorp.com/terraform/1.5.7/terraform_1.5.7_linux_amd64.zip
-          unzip terraform_1.5.7_linux_amd64.zip
-          sudo mv terraform /usr/local/bin/
-          rm terraform_1.5.7_linux_amd64.zip
+          mkdir -p ~/.local/bin
+          curl -LO https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip
+          unzip terraform_${TERRAFORM_VERSION}_linux_amd64.zip
+          mv terraform ~/.local/bin/
+          rm terraform_${TERRAFORM_VERSION}_linux_amd64.zip
+          export PATH="$HOME/.local/bin:$PATH"
         '''
       }
     }
@@ -37,7 +31,10 @@ pipeline {
     stage('Terraform Init') {
       steps {
         dir('terraform') {
-          sh 'terraform init'
+          sh '''
+            export PATH="$HOME/.local/bin:$PATH"
+            terraform init
+          '''
         }
       }
     }
@@ -45,7 +42,10 @@ pipeline {
     stage('Terraform Validate') {
       steps {
         dir('terraform') {
-          sh 'terraform validate'
+          sh '''
+            export PATH="$HOME/.local/bin:$PATH"
+            terraform validate
+          '''
         }
       }
     }
@@ -53,7 +53,10 @@ pipeline {
     stage('Terraform Plan') {
       steps {
         dir('terraform') {
-          sh 'terraform plan -out=tfplan'
+          sh '''
+            export PATH="$HOME/.local/bin:$PATH"
+            terraform plan -out=tfplan
+          '''
         }
       }
     }
@@ -62,7 +65,10 @@ pipeline {
       steps {
         dir('terraform') {
           input message: 'Approve Terraform Apply?'
-          sh 'terraform apply -auto-approve tfplan'
+          sh '''
+            export PATH="$HOME/.local/bin:$PATH"
+            terraform apply -auto-approve tfplan
+          '''
         }
       }
     }
