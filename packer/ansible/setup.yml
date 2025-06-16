@@ -1,0 +1,20 @@
+---
+- name: Setup server
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Ensure Python 3 is installed
+      raw: |
+        apt-get update
+        apt-get install -y python3 python3-apt
+
+    - name: Set ansible_python_interpreter
+      set_fact:
+        ansible_python_interpreter: /usr/bin/python3
+
+    - name: Install NGINX
+      apt:
+        name: nginx
+        state: present
+        update_cache: yes
