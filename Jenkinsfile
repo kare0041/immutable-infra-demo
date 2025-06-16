@@ -24,16 +24,22 @@ pipeline {
           # Download Terraform
           curl -LO https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip
           
-          # Remove existing terraform binary if it exists
-          rm -f ~/.local/bin/terraform
+          # Clean up any existing terraform installation
+          rm -rf ~/.local/bin/terraform
           
-          # Unzip with force flag
-          unzip -o terraform_${TERRAFORM_VERSION}_linux_amd64.zip
+          # Create a temporary directory for extraction
+          TEMP_DIR=$(mktemp -d)
+          cd $TEMP_DIR
+          
+          # Unzip to temporary directory
+          unzip -o ../terraform_${TERRAFORM_VERSION}_linux_amd64.zip
           
           # Move to bin directory
           mv terraform ~/.local/bin/
           
           # Clean up
+          cd -
+          rm -rf $TEMP_DIR
           rm terraform_${TERRAFORM_VERSION}_linux_amd64.zip
           
           # Add to PATH
